@@ -8,9 +8,6 @@ from dateutil.relativedelta import relativedelta
 from RPA.Browser.Selenium import Selenium
 from selenium.webdriver.common.by import By
 
-from utils import write_to_excel
-from work_item_getter import WorkItemGetter
-
 browser_lib = Selenium()
 
 
@@ -40,7 +37,10 @@ class Crawler:
         time.sleep(10)
         if browser_lib.is_element_visible(css_selector):
             browser_lib.click_button(css_selector)
-        else:
+        self.accept_cookies()
+
+    def accept_cookies(self):
+        if browser_lib.is_element_visible(self.ACCEPT_COOKIE_SELECTOR):
             browser_lib.click_button(self.ACCEPT_COOKIE_SELECTOR)
 
     def click_search_button(self, search_term: str = "messi"):
@@ -57,15 +57,14 @@ class Crawler:
         css_selector = "css:#site-content > div > div.css-1npexfx > div.css-nhmgdh > form > div.css-hrdzfd > div > select"
         browser_lib.select_from_list_by_label(css_selector, "Sort by Newest")
 
-    def set_section(self, selected_section: str = "Any"):
+    def set_section(self, selected_sections = []):
         selector = "css:#site-content > div > div.css-1npexfx > div.css-1az02az > div > div > div:nth-child(2) > div > div > button"
         browser_lib.click_button(selector)
-        for idx, section_name in enumerate(self.SECTION_MAPPING):
-            if section_name == selected_section:
-                browser_lib.click_button(
-                    self.SECTION_CHECKBOX_BASE_SELECTOR.format(list_number=idx + 1)
-                )
-                break
+        for candidate_section in selected_sections:
+            idx = self.SECTION_MAPPING.index(candidate_section)
+            browser_lib.click_button(
+                self.SECTION_CHECKBOX_BASE_SELECTOR.format(list_number=idx + 1)
+            )
 
     def calculate_date_range(self, month: int = 0):
         prev_month = month - 1 if month > 2 else 0
@@ -169,18 +168,26 @@ class Crawler:
         return (title_count, description_count)
 
     def run(self, search_phrase, news_categories, months):
+        if len(news_categories) == 0:
+            news_categories = ['Any']
+        news_categories = [category.lower().capitalize() for category in news_categories]
+        if not all(category in self.SECTION_MAPPING for category in news_categories):
+            raise ValueError("Valid news categories are: ", self.SECTION_MAPPING)
+        records = []
         try:
             self.open_url()
             self.accept_conditions()
             self.click_search_button(search_phrase)
+            self.accept_cookies()
             self.set_sorting_order()
-            self.set_section()
+            self.set_section(news_categories)
             self.set_date_range(months)
             self.load_all_articles()
-            return self.fetch_articles(search_phrase)
+            records = self.fetch_articles(search_phrase)
         except Exception as e:
             print("ERROR OCCURRED")
             raise e
         finally:
             browser_lib.close_all_browsers()
-            return records
+
+        return records
