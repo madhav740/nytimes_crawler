@@ -17,5 +17,5 @@ class RpaWorkItemGetter:
         return int(self.__get_rpa_variable("no_of_month"))
 
     def __get_rpa_variable(self, var_name):
-        self.__work_item.get_input_work_item()
+        # self.__work_item.get_input_work_item()
         return self.__work_item.get_work_item_variable(var_name)
