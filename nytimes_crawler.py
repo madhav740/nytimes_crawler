@@ -6,21 +6,18 @@ from selenium.webdriver.common.by import By
 from article_info import ArticleInfo
 import constant
 import utils
-import pdb
 import time
 
 class NytimesCrawler:
 
-    def __init__(self, search_term, news_categories, months, output_directory, file_name):
+    def __init__(self, search_term, news_categories, months, output_directory="output"):
         self.__browser_lib = Selenium()
         self.search_term = search_term
         self.news_categories = [category.lower().capitalize() for category in news_categories]
         self.months = months
         self.start_date = None
         self.end_date = None
-        self.output_directory = output_directory
-        self.file_name = file_name
-        self.image_download_directory = 'output'
+        self.image_download_directory = output_directory
         if len(news_categories) == 0:
             self.news_categories = ['Any']
         if not all(category in constant.NEWS_CATEGORIES for category in self.news_categories):
@@ -36,6 +33,7 @@ class NytimesCrawler:
         self.set_sorting_order()
         self.load_all_articles()
         result = self.fetch_articles()
+        return result
 
         # try:
         #     self.load_home_page()
@@ -54,8 +52,13 @@ class NytimesCrawler:
 
     def load_home_page(self):
         self.__browser_lib.open_available_browser(constant.NY_TIMES_HOME_PAGE_URL)
-        self.__browser_lib.wait_until_element_is_visible(constant.CONTINUE_TERMS_AND_CONDITIONS_POP_UP_CSS_SELECTOR)
-        self.__browser_lib.click_button(constant.CONTINUE_TERMS_AND_CONDITIONS_POP_UP_CSS_SELECTOR)
+        time.sleep(10)
+        if self.__browser_lib.is_element_visible(constant.CONTINUE_TERMS_AND_CONDITIONS_POP_UP_CSS_SELECTOR):
+            self.__browser_lib.click_button(constant.CONTINUE_TERMS_AND_CONDITIONS_POP_UP_CSS_SELECTOR)
+        elif self.__browser_lib.is_element_visible(constant.ACCEPT_COOKIES_TRACKER_POPUP):
+            self.__browser_lib.click_button(constant.ACCEPT_COOKIES_TRACKER_POPUP)
+        else:
+            pass
 
     def input_search_term_and_search(self):
         self.__browser_lib.click_button(constant.SEARCH_BUTTON_CSS_SELECTOR)
@@ -117,14 +120,7 @@ class NytimesCrawler:
         ordered_list_element = self.__browser_lib.find_element(
             constant.ALL_ARTICLES_ORDERED_LIST_CSS_SELECTOR
         )
-        # article_elements = ordered_list_element.find_elements(By.TAG_NAME, "li")
-        #print(f"Fetching Articles #{len(article_elements)}")
-        utils.create_csv_file(self.output_directory,self.file_name)
-        # to write in Excel file uncomment following line
-        # utils.create_excel_file(self.output_directory,self.file_name)
-        time.sleep(5)
         for article_element in ordered_list_element.find_elements(By.TAG_NAME, "li"):
-            pdb.set_trace()
             article_info = ArticleInfo(article_element)
             if article_info.is_ad_banner():
                 continue
@@ -144,9 +140,6 @@ class NytimesCrawler:
                 "search_term_occurence_count": search_term_occurence_count,
                 "contains_monetary_value": contains_monetary_value,
             }
-            utils.append_rows_in_csv_file(record,self.output_directory,self.file_name)
-            # to write in Excel file uncomment following line
-            # utils.append_rows_in_excel_file(record,self.output_directory, self.file_name)
             result.append(record)
         return result
 

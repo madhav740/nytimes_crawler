@@ -1,5 +1,6 @@
 NY_TIMES_HOME_PAGE_URL = "https://nytimes.com"
 CONTINUE_TERMS_AND_CONDITIONS_POP_UP_CSS_SELECTOR = "css:.css-1fzhd9j"
+ACCEPT_COOKIES_TRACKER_POPUP = "css:#site-content > div.gdpr.shown.expanded.expanded-dock.css-jgcl4n.efw9frv0 > div.css-f63blv.e2qmvq0 > div > div.css-1cndoy8 > button:nth-child(1)"
 SEARCH_BUTTON_CSS_SELECTOR = "css:#app > div:nth-child(4) > div.NYTAppHideMasthead.css-1r6wvpq.e1m0pzr40 > header > section.css-9kr9i3.e1m0pzr42 > div.css-qo6pn.ea180rp0 > div.css-10488qs > button"
 SEARCH_TEXT_BOX_CSS_SELECTOR = "css:#search-input > form > div > input"
 GO_BUTTON_CSS_SELECTOR = "css:#search-input > form > button"

@@ -1,14 +1,11 @@
 tasks:
-  Default:
-    command:
-      - python
-      - main.py
-
-condaConfigFile: conda.yaml
-artifactsDir: output
+  scraper:
+    shell: python3 main.py
+artifactsDir:
+  output
+condaConfigFile:
+  conda.yaml
 PATH:
-  - .
+    - .
 PYTHONPATH:
-  - .
-ignoreFiles:
-  - .gitignore
+    - .

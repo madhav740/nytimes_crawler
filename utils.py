@@ -2,8 +2,8 @@ import uuid
 import os
 import requests
 import re
-import csv
 import constant
+import pandas as pd
 from excel_writer import ExcelWriter
 
 def download_image(image_url, download_directory: 'output'):
@@ -20,17 +20,6 @@ def contains_monetary_values(text):
     pattern = r"\$[\d,.]+|\b\d+(\.\d{1,2})?\s?(billion|million|thousand)?\s?(dollars|USD)?\b"
     return bool(re.search(pattern, text))
 
-def create_csv_file(output_dir: "output", file_name: "nytimes.csv"):
-    file_name = f"{os.path.join(os.getcwd(), output_dir)}/{file_name}"
-    with open(file_name, "w", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=constant.CSV_FIELD_NAMES)
-        writer.writeheader()
-
-def append_rows_in_csv_file(record, output_dir: 'output', file_name: "nytimes.csv"):
-    file_name = f"{os.path.join(os.getcwd(), output_dir)}/{file_name}"
-    with open(file_name, "a+", newline="") as csvfile:
-        csv.DictWriter(csvfile, fieldnames=constant.CSV_FIELD_NAMES).writerow(record)
-
 def create_excel_file(output_dir: 'output', file_name: "nytimes"):
     excel_writer = ExcelWriter()
     excel_file = f"{os.path.join(os.getcwd(), output_dir)}/{file_name}"
@@ -38,10 +27,15 @@ def create_excel_file(output_dir: 'output', file_name: "nytimes"):
     excel_writer.rename_sheet(excel_file, 'Sheet', file_name)
     excel_writer.append_row_to_sheet(constant.CSV_FIELD_NAMES, excel_file, file_name)
 
-
 def append_rows_in_excel_file(record,output_dir: 'output', file_name: "nytimes"):
     excel_writer = ExcelWriter()
     excel_file = f"{os.path.join(os.getcwd(), output_dir)}/{file_name}"
     excel_writer.append_row_to_sheet(record, excel_file, file_name)
+
+def write_to_excel(records, output_dir, file_name="nytimes", sheet_name="result"):
+    f_name = f"{os.path.join(os.getcwd(), output_dir)}/{file_name}.xlsx"
+    df = pd.DataFrame(records)
+    df.to_excel(f_name, sheet_name=sheet_name, index=False)
+
 
 
