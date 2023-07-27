@@ -3,19 +3,18 @@ from RPA.Robocorp.WorkItems import WorkItems
 class RpaWorkItemGetter:
 
     def __init__(self):
-        self.__work_item = WorkItems()
+        work_item = WorkItems()
+        work_item.get_input_work_item()
+        self.input_wi = work_item.get_work_item_variables()
+        print(self.input_wi)
 
     def search_phrase(self):
-        return self.__get_rpa_variable("search_phrase")
+        return self.input_wi["search_phrase"]
 
     def news_categories(self):
-        categories = self.__get_rpa_variable("news_category")
+        categories = self.input_wi["news_category"]
         news_categories = [category.strip() for category in categories.split(',')]
         return news_categories
 
     def months(self):
-        return int(self.__get_rpa_variable("no_of_month"))
-
-    def __get_rpa_variable(self, var_name):
-        self.__work_item.get_input_work_item()
-        return self.__work_item.get_work_item_variable(var_name)
+        return int(self.input_wi["no_of_month"])
