@@ -7,6 +7,7 @@ from article_info import ArticleInfo
 import constant
 import utils
 import time
+import pdb
 
 class NytimesCrawler:
 
@@ -52,7 +53,10 @@ class NytimesCrawler:
 
     def load_home_page(self):
         self.__browser_lib.open_available_browser(constant.NY_TIMES_HOME_PAGE_URL)
-        time.sleep(10)
+        self.wait_and_accept_tracker_conditions()
+
+    def wait_and_accept_tracker_conditions(self):
+        time.sleep(5)
         if self.__browser_lib.is_element_visible(constant.CONTINUE_TERMS_AND_CONDITIONS_POP_UP_CSS_SELECTOR):
             self.__browser_lib.click_button(constant.CONTINUE_TERMS_AND_CONDITIONS_POP_UP_CSS_SELECTOR)
         elif self.__browser_lib.is_element_visible(constant.ACCEPT_COOKIES_TRACKER_POPUP):
@@ -60,10 +64,12 @@ class NytimesCrawler:
         else:
             pass
 
+
     def input_search_term_and_search(self):
         self.__browser_lib.click_button(constant.SEARCH_BUTTON_CSS_SELECTOR)
         self.__browser_lib.input_text(constant.SEARCH_TEXT_BOX_CSS_SELECTOR, self.search_term)
         self.__browser_lib.click_button(constant.GO_BUTTON_CSS_SELECTOR)
+        self.wait_and_accept_tracker_conditions()
 
     def set_section(self):
         self.__browser_lib.wait_until_element_is_visible(constant.SECTION_DROPDOWN_CSS_SELECTOR)
@@ -83,6 +89,8 @@ class NytimesCrawler:
     """
 
     def set_date_filter(self):
+        print(self.start_date)
+        print(self.end_date)
         self.__browser_lib.click_button(constant.DATE_RANGE_DROPDOWN_CSS_SELECTOR)
         # select custom date option from drop down
         self.__browser_lib.click_button(constant.DATE_RANGE_OPTIONS_BASE_SELECTOR.format(
@@ -116,11 +124,13 @@ class NytimesCrawler:
             self.__browser_lib.click_button(constant.SHOW_MORE_BUTTON_CSS_SELECTOR)
 
     def fetch_articles(self):
+        time.sleep(5)
         result = []
         ordered_list_element = self.__browser_lib.find_element(
             constant.ALL_ARTICLES_ORDERED_LIST_CSS_SELECTOR
         )
         for article_element in ordered_list_element.find_elements(By.TAG_NAME, "li"):
+            pdb.set_trace()
             article_info = ArticleInfo(article_element)
             if article_info.is_ad_banner():
                 continue
@@ -150,7 +160,7 @@ class NytimesCrawler:
             return text.lower().count(self.search_term.lower())
 
     def __calculate_date_range(self):
-        self.end_date = datetime.now()
+        self.end_date = datetime.now() - timedelta(days=1)
         prev_month = self.months - 1 if self.months > 2 else 0
         beginning_of_current_month = self.end_date - timedelta(days=(self.end_date.day) - 1)
         self.start_date = beginning_of_current_month - relativedelta(months=prev_month)
